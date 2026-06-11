@@ -36,21 +36,19 @@ if (isset($_POST['update_profile'])) {
     if (empty($nama_baru)) {
         $error = "Nama pengguna baru tidak boleh kosong.";
     } else {
-        // Cek validasi password lama ke database admin Anda (Asumsi nama tabel: admin/users)
-        // Sesuaikan nama tabel 'admin' dan kolom 'username'/'password' jika berbeda di HeidiSQL
-        $cek_user = mysqli_query($koneksi, "SELECT * FROM admin WHERE username='$user_aktif' AND password='$password_lama'");
+                // Cek validasi password lama ke database user
+$cek_user = mysqli_query($koneksi, "SELECT * FROM users WHERE username='$user_aktif' AND password='$password_lama'");
         
         if (mysqli_num_rows($cek_user) === 0) {
             $error = "Kata sandi lama yang Anda masukkan salah.";
         } else {
             if (!empty($password_baru)) {
                 // Jika password baru diisi, update Nama dan Password sekaligus
-                $query_update = "UPDATE admin SET username='$nama_baru', password='$password_baru' WHERE username='$user_aktif'";
+$query_update = "UPDATE users SET username='$nama_baru', password='$password_baru' WHERE username='$user_aktif'";
             } else {
                 // Jika password baru kosong, hanya update Nama saja
-                $query_update = "UPDATE admin SET username='$nama_baru' WHERE username='$user_aktif'";
+$query_update = "UPDATE users SET username='$nama_baru' WHERE username='$user_aktif'";
             }
-
             if (mysqli_query($koneksi, $query_update)) {
                 $_SESSION['admin_user'] = $nama_baru; // Perbarui session aktif
                 $user_aktif = $nama_baru;
@@ -67,7 +65,7 @@ if (isset($_POST['switch_account'])) {
     $switch_username = mysqli_real_escape_string($koneksi, $_POST['switch_username']);
     $switch_password = mysqli_real_escape_string($koneksi, $_POST['switch_password']);
 
-    $cek_switch = mysqli_query($koneksi, "SELECT * FROM admin WHERE username='$switch_username' AND password='$switch_password'");
+$cek_switch = mysqli_query($koneksi, "SELECT * FROM users WHERE username='$switch_username' AND password='$switch_password'");
     
     if (mysqli_num_rows($cek_switch) === 1) {
         // Ganti data session aktif dengan data akun yang baru dimasukkan
