@@ -114,13 +114,19 @@ if (!$query_tamu) {
                     <!-- Tombol Tambah Tamu Baru (Create) -->
                     <a href="tambah.php" style="background-color: #2ecc71; color: white; text-decoration: none; padding: 10px 22px; font-weight: 600; border-radius: 4px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: background 0.2s;">
                         + Tambah Tamu Baru
-                    </a>
+                        </a>
+                        <!-- Masukkan ini di sebelah atau di bawah tombol "+ Tambah Tamu Baru" -->
+                    <button onclick="eksporExcel()" style="background-color: #27ae60; color: white; border: none; padding: 10px 22px; font-weight: 600; border-radius: 4px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+    📊 Ekspor ke Excel
+                    </button>
+
+                    
 
                 </div>
 
                 <!-- Rendering Baris Tabel Pengunjung -->
                 <div class="table-responsive">
-                    <table>
+                        <table id="tabel_pengunjung">
                         <thead>
                             <tr>
                                 <th style="width: 50px;">ID</th>
@@ -130,7 +136,7 @@ if (!$query_tamu) {
                                 <th>Instansi / Lembaga</th>
                                 <th>Keperluan</th>
                                 <th style="width: 150px;">Waktu Kunjungan</th>
-                                <th style="width: 120px;">Aksi</th>
+                                <th style="width: 120px;" data-exclude="true">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -140,7 +146,7 @@ if (!$query_tamu) {
                                 while ($row = mysqli_fetch_assoc($query_tamu)): 
                             ?>
                                 <tr>
-                                    <td style="text-align: center;"><?php echo $no++; ?></td>
+                                    <td style="text-align: center;">
                                     <td><?php echo htmlspecialchars($row['nama']); ?></td>
                                     <td><?php echo htmlspecialchars($row['email']); ?></td>
                                     <td><?php echo htmlspecialchars($row['no_telepon']); ?></td>
@@ -152,7 +158,7 @@ if (!$query_tamu) {
                                         echo isset($row['tgl_kunjungan']) ? htmlspecialchars($row['tgl_kunjungan']) : date('Y-m-d H:i:s'); 
                                         ?>
                                     </td>
-                                    <td style="text-align: center;">
+                                    <td style="text-align: center;" data-exclude="true">
                                         <a href="edit.php?id=<?php echo $row['id']; ?>" class="btn-action btn-edit">✏️</a>
                                         <a href="hapus.php?id=<?php echo $row['id']; ?>" class="btn-action btn-delete" onclick="return confirm('Apakah Anda yakin ingin menghapus data tamu ini?')">🗑️</a>
                                     </td>
