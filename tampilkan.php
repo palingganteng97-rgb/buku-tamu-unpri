@@ -159,20 +159,19 @@ $instansi_unik  = $data_instansi['total'];
 <body>
 
     <div class="header-nav">
-          Buku Tamu RIS Kendal
-    </div>
+    Buku Tamu RSI Kendal
+</div>
 
-    <div class="dashboard-layout">
-        
-        <!-- Sidebar Menu Berisi Opsi Baru -->
-        <div class="sidebar-menu">
-            <div>
-                <a href="tampilkan.php" class="active">DASHBOARD</a>
-                <a href="tabel_tamu.php">TABEL TAMU</a>
-                <a href="data_instansi.php">DATA INSTANSI</a>
-                <a href="tambah.php">TAMBAH TAMU</a>
-                <a href="manajemen_akun.php">MANAJEMEN AKUN</a>
-            </div>
+<div class="dashboard-layout">
+    
+    <!-- Sidebar Menu Berisi Opsi Baru -->
+    <div class="sidebar-menu">
+        <div>
+            <a href="tampilkan.php" class="active">DASHBOARD</a>
+            <a href="tabel_tamu.php">TABEL TAMU</a>
+            <a href="data_instansi.php">DATA INSTANSI</a>
+            <a href="manajemen_akun.php">MANAJEMEN AKUN</a>
+        </div>
             <a href="logout.php" class="logout-btn">LOGOUT</a>
         </div>
 
