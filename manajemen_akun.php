@@ -36,28 +36,39 @@ if (isset($_POST['update_profile'])) {
     if (empty($nama_baru)) {
         $error = "Nama pengguna baru tidak boleh kosong.";
     } else {
-                // Cek validasi password lama ke database user
-$cek_user = mysqli_query($koneksi, "SELECT * FROM users WHERE username='$user_aktif' AND password='$password_lama'");
-        
-        if (mysqli_num_rows($cek_user) === 0) {
+        // Ambil data password terenkripsi dari database berdasarkan user aktif
+        $query_user = mysqli_query($koneksi, "SELECT * FROM users WHERE username='$user_aktif'");
+        $data_user  = mysqli_fetch_assoc($query_user);
+
+        // Validasi password menggunakan password_verify (Sama seperti login.php)
+        if (!$data_user || !password_verify($password_lama, $data_user['password'])) {
             $error = "Kata sandi lama yang Anda masukkan salah.";
         } else {
             if (!empty($password_baru)) {
-                // Jika password baru diisi, update Nama dan Password sekaligus
-$query_update = "UPDATE users SET username='$nama_baru', password='$password_baru' WHERE username='$user_aktif'";
+                // Jika ganti password, enkripsi dulu password barunya sebelum disimpan
+                $password_hash_baru = password_hash($password_baru, PASSWORD_DEFAULT);
+                $query_update = "UPDATE users SET username='$nama_baru', password='$password_hash_baru' WHERE username='$user_aktif'";
             } else {
                 // Jika password baru kosong, hanya update Nama saja
-$query_update = "UPDATE users SET username='$nama_baru' WHERE username='$user_aktif'";
+                $query_update = "UPDATE users SET username='$nama_baru' WHERE username='$user_aktif'";
             }
+
             if (mysqli_query($koneksi, $query_update)) {
                 $_SESSION['admin_user'] = $nama_baru; // Perbarui session aktif
-                $user_aktif = $nama_baru;
-                $sukses = "Profil akun berhasil diperbarui!";
+                
+                // TRICK ANTI-PERMANEN: Alihkan halaman ke dirinya sendiri agar pesan error/sukses bersih saat di-refresh
+                header("Location: manajemen_akun.php?status=sukses");
+                exit();
             } else {
                 $error = "Gagal memperbarui data: " . mysqli_error($koneksi);
             }
         }
     }
+}
+
+// Tangkap status sukses dari URL redirection di atas
+if (isset($_GET['status']) && $_GET['status'] == 'sukses') {
+    $sukses = "Profil akun berhasil diperbarui!";
 }
 
 // 2. PROSES SUBMIT: GANTI AKUN (SWITCH ACCOUNT)
