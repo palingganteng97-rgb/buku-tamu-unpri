@@ -64,9 +64,7 @@ if (isset($_POST['login'])) {
         .divider:not(:empty)::before { margin-right: .8em; }
         .divider:not(:empty)::after { margin-left: .8em; }
         .alert-error { background-color: rgba(127, 29, 29, 0.4); color: #FCA5A5; font-size: 12px; padding: 10px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #991B1B; }
-        
-        /* Custom styling khusus tombol Apple agar seimbang dengan tombol Google bawaan SDK */
-        .btn-apple { width: 100%; max-width: 320px; background-color: transparent; border: 1px solid #36344A; border-radius: 4px; padding: 10px; color: #ffffff; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 12px; font-family: -apple-system, Roboto, sans-serif; }
+        .btn-apple { width: 100%; max-width: 320px; background-color: transparent; border: 1px solid #36344A; border-radius: 4px; padding: 10px; color: #ffffff; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 12px; }
         .btn-apple:hover { background-color: #262436; }
     </style>
 </head>
@@ -87,35 +85,43 @@ if (isset($_POST['login'])) {
             
             <?php if($error): ?><div class="alert-error"><?= $error ?></div><?php endif; ?>
 
+            <!-- Batas Awal Input Form -->
             <form method="POST" action="">
-                <div class="form-group"><input type="text" name="username" placeholder="Username / Full Name" required></div>
-                <div class="form-group"><input type="password" name="password" placeholder="Enter your password" required></div>
-                <div class="forgot-link"><a href="lupa_password.php">Forgot password?</a></div>
+                <div class="form-group">
+                    <input type="text" name="username" placeholder="Username / Full Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" name="password" placeholder="Enter your password" required>
+                </div>
+                <div class="forgot-link">
+                    <a href="lupa_password.php">Forgot password?</a>
+                </div>
                 <button type="submit" name="login" class="btn-submit">Log in</button>
             </form>
+            <!-- Batas Akhir Input Form -->
             
-            <!-- BLOK INTEGRASI AKSES SOSIAL LOGIN -->
-                        <!-- BLOK INTEGRASI AKSES SOSIAL LOGIN (METODE LINK DIRECT AMAN UTK LOCALHOST PORT 8080) -->
-                        <!-- BLOK INTEGRASI AKSES SOSIAL LOGIN (METODE FORCE SELECT ACCOUNT) -->
+            <!-- BLOK TOMBOL SOSIAL LOGIN TERPISAH DI LUAR FORM -->
             <div class="divider">Or log in with</div>
             
-            <div style="display: flex; flex-direction: column; align-items: center; width: 100%; gap: 12px;">
-                
-                <!-- TOMBOL GOOGLE: Dipaksa membuka halaman pemilihan daftar akun Gmail secara murni -->
-                <button type="button" class="btn-social" style="width: 100%; max-width: 320px; background-color: #1a73e8; border: none; border-radius: 4px; padding: 10px; color: white; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; font-weight: 500;" 
+            <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                <!-- Tombol Google Otomatis Membuka Jendela Pilihan Email Akun -->
+                <button type="button" style="width: 100%; max-width: 320px; background-color: #1a73e8; border: none; border-radius: 4px; padding: 10px; color: white; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; font-weight: 500;" 
                         onclick="loginDenganGoogle()">
                     <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path fill="#ffffff" d="M12.24 10.285V13.4h6.86c-.277 1.56-1.602 4.585-6.86 4.585-4.54 0-8.24-3.765-8.24-8.4s3.7-8.4 8.24-8.4c2.58 0 4.307 1.095 5.298 2.045l2.465-2.37C18.435 1.21 15.62 0 12.24 0 5.58 0 0 5.37 0 12s5.58 12 12.24 12c6.96 0 11.57-4.89 11.57-11.79 0-.795-.085-1.4-.195-1.925H12.24z"/></svg>
                     Sign in with Google
                 </button>
 
-                <!-- TOMBOL APPLE -->
+                <!-- Tombol Apple -->
                 <button type="button" class="btn-apple" onclick="window.location.href='https://apple.com'">
                     <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.14.67-2.86 1.51-.62.73-1.17 1.87-1.02 2.98 1.12.09 2.23-.62 2.89-1.43z"/></svg>
                     Sign in with Apple
                 </button>
             </div>
 
-    <!-- SCRIPT JAVASCRIPT LOGIKA PENGALIHAN PARAMETER GOOGLE -->
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIKA PENGALIHAN UNTUK MEMBUKA HALAMAN CHOOSE ACCOUNT -->
     <script>
         function loginDenganGoogle() {
             const clientId = "://googleusercontent.com";
@@ -123,41 +129,14 @@ if (isset($_POST['login'])) {
             const scope = "email profile";
             const responseType = "token";
             
-            // Menggabungkan URL Endpoint dengan instruksi wajib prompt memilih akun
             const googleAuthUrl = `https://google.com?` + 
                                   `client_id=${clientId}` + 
                                   `&redirect_uri=${encodeURIComponent(redirectUri)}` + 
                                   `&scope=${encodeURIComponent(scope)}` + 
                                   `&response_type=${responseType}` + 
-                                  `&prompt=select_account`; // <-- Parameter pengunci halaman pemilihan akun
+                                  `&prompt=select_account`;
             
-            // Alihkan halaman window utama
             window.location.href = googleAuthUrl;
-        }
-
-        // Fungsi opsional untuk membaca data email yang berhasil dipilih di browser localhost Anda
-        window.onload = function() {
-            const fragment = window.location.hash;
-            if (fragment) {
-                const params = new URLSearchParams(fragment.substring(1));
-                const accessToken = params.get("access_token");
-                if (accessToken) {
-                    // Berhasil mendapatkan kunci akses akun dari pop-up pilihan email user
-                    alert("Akun Google berhasil diverifikasi! Token akses terdeteksi.");
-                }
-            }
-        }
-    </script>
-        </div>
-    </div>
-
-    <!-- PUSTAKA UTAMA SDK GOOGLE IDENTITY SERVICES -->
-    <script src="https://google.com" async defer></script>
-    <script>
-        function handleCredentialResponse(response) {
-            // Callback yang dipicu setelah akun Gmail berhasil diklik/dipilih user
-            console.log("Encoded JWT ID token: " + response.credential);
-            alert("Login Berhasil! Akun Google Anda terverifikasi di sistem.");
         }
     </script>
 </body>
