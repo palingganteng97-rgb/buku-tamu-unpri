@@ -123,7 +123,7 @@ if (isset($_GET['search'])) {
 
     <!-- Navbar Atas -->
     <div class="top-navbar">
-        Sistem Informasi Buku Tamu RSI Kendal Testing
+        Sistem Informasi Buku Tamu RSI Kendal Muhammadiyah
     </div>
 
     <!-- Layout Utama -->
