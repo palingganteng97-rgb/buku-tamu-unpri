@@ -99,6 +99,16 @@ if (isset($_GET['search'])) {
         .btn-secondary { color: #fff; background-color: #6c757d; }
         .btn-light { color: #000; background-color: #f8f9fa; border: 1px solid #ced4da; }
 
+        /* Tempelkan baris ini di dalam tag <style> file data_instansi.php */
+.header-nav { 
+    background-color: #3b5998; 
+    color: white; 
+    padding: 15px 20px; 
+    font-size: 16px; 
+    font-weight: 600; 
+    text-align: center; 
+}
+
         /* Tombol Ikon Kotak Aksi */
         .btn-action-edit { background-color: #0ea5e9; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 14px; cursor: pointer; display: inline-block; }
         .btn-action-edit:hover { background-color: #0284c7; }
@@ -121,10 +131,11 @@ if (isset($_GET['search'])) {
 </head>
 <body>
 
-    <!-- Navbar Atas -->
-    <div class="header-nav">
-         Buku Tamu RIS Kendal
-    </div>
+   <!-- Ganti baris teks judul di bawah tag body menjadi seperti ini -->
+<div class="header-nav">
+    Buku Tamu RSI Kendal
+</div>
+
 
     <!-- Layout Utama -->
     <div class="dashboard-layout">
