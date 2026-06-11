@@ -185,9 +185,12 @@ if (isset($_GET['aksi']) && $_GET['aksi'] == 'ekspor') {
                                     <td style="text-align: center;">
                                         <?php echo isset($row['tgl_kunjungan']) ? htmlspecialchars($row['tgl_kunjungan']) : date('Y-m-d H:i:s'); ?>
                                     </td>
-                                    <td style="text-align: center;">
-                                        <a href="edit.php?id=<?php echo $row['id']; ?>" class="btn-action btn-edit">✏️</a>
-                                    </td>
+                                    <!-- Pastikan kode di dalam kolom aksi tertulis lengkap seperti ini -->
+<td style="text-align: center;">
+    <a href="edit.php?id=<?php echo $row['id']; ?>" class="btn-action btn-edit" style="background-color: #00a8ff; padding: 6px 12px; border-radius: 4px; color: white; text-decoration: none; font-size: 13px; margin-right: 5px;">✏️</a>
+    <a href="hapus.php?id=<?php echo $row['id']; ?>" class="btn-action btn-delete" style="background-color: #e84118; padding: 6px 12px; border-radius: 4px; color: white; text-decoration: none; font-size: 13px;" onclick="return confirm('Apakah Anda yakin ingin menghapus data tamu ini?')">🗑️</a>
+</td>
+
                                 </tr>
                             <?php 
                                     endwhile; 
