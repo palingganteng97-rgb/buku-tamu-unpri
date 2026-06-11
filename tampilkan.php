@@ -159,7 +159,7 @@ $instansi_unik  = $data_instansi['total'];
 <body>
 
     <div class="header-nav">
-        Sistem Informasi Buku Tamu Universitas Prima Indonesia
+          Buku Tamu RIS Kendal
     </div>
 
     <div class="dashboard-layout">
