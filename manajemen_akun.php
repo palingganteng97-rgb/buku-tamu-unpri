@@ -130,17 +130,22 @@ $cek_switch = mysqli_query($koneksi, "SELECT * FROM users WHERE username='$switc
 
     <div class="dashboard-layout">
         
-        <!-- Sidebar Menu Tetap Konsisten -->
-        <div class="sidebar-menu">
-            <div>
-                <a href="tampilkan.php">DASHBOARD</a>
-                <a href="tabel_tamu.php">TABEL TAMU</a>
-                <a href="data_instansi.php">DATA INSTANSI</a>
-                <a href="tambah.php">TAMBAH TAMU</a>
-                <a href="manajemen_akun.php" class="active">MANAJEMEN AKUN</a>
-            </div>
-            <a href="logout.php" class="logout-btn">LOGOUT</a>
-        </div>
+        <!-- Sidebar Menu -->
+<div class="sidebar-menu" style="display: flex; flex-direction: column; height: calc(100vh - 52px); justify-content: space-between;">
+    <!-- Grup Menu Atas -->
+    <div>
+        <a href="tampilkan.php">DASHBOARD</a>
+        <a href="tabel_tamu.php">TABEL TAMU</a>
+        <a href="data_instansi.php">DATA INSTANSI</a>
+        <a href="tambah.php">TAMBAH TAMU</a>
+        <a href="manajemen_akun.php" class="active">MANAJEMEN AKUN</a>
+    </div>
+    
+    <!-- Grup Menu Bawah (Dipaksa Menempel ke Dasar Sidebar) -->
+    <div style="padding-bottom: 20px;">
+        <a href="logout.php" class="logout-btn" style="color: #e74c3c; font-weight: 600; text-decoration: none; display: block; padding: 15px 20px;">LOGOUT</a>
+    </div>
+</div>
 
         <!-- Kontainer Utama -->
         <div class="main-container">
