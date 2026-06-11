@@ -98,7 +98,7 @@ if (!$query_tamu) {
                 <h2 style="margin-top: 0; margin-bottom: 5px; font-weight: 600; color: #333;">DATA PENGUNJUNG</h2>
                 <p style="color: #777; margin-bottom: 25px; font-size: 14px;">Log Riwayat Aktivitas Buku Tamu</p>
                 
-                <!-- BARIS KONTROL: FITUR CARI (KIRI) & TOMBOL CREATE (KANAN) -->
+                <!-- BARIS KONTROL: FITUR CARI (KIRI) & TOMBOL AKSI (KANAN) -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
                     
                     <!-- Form Fitur Pencarian Data -->
@@ -111,22 +111,24 @@ if (!$query_tamu) {
                         <?php endif; ?>
                     </form>
 
-                    <!-- Tombol Tambah Tamu Baru (Create) -->
-                    <a href="tambah.php" style="background-color: #2ecc71; color: white; text-decoration: none; padding: 10px 22px; font-weight: 600; border-radius: 4px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: background 0.2s;">
-                        + Tambah Tamu Baru
+                    <!-- Group Tombol Tambah & Ekspor (Kanan) -->
+                    <div style="display: flex; gap: 10px;">
+                        <!-- Tombol Tambah Tamu Baru (Create) -->
+                        <a href="tambah.php" style="background-color: #2ecc71; color: white; text-decoration: none; padding: 10px 22px; font-weight: 600; border-radius: 4px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: background 0.2s;">
+                            + Tambah Tamu Baru
                         </a>
-                        <!-- Masukkan ini di sebelah atau di bawah tombol "+ Tambah Tamu Baru" -->
-                    <button onclick="eksporExcel()" style="background-color: #27ae60; color: white; border: none; padding: 10px 22px; font-weight: 600; border-radius: 4px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-    📊 Ekspor ke Excel
-                    </button>
 
-                    
+                        <!-- Tombol Ekspor ke Excel (Sudah Dilengkapi fungsi onclick) -->
+                        <button onclick="eksporExcel()" style="background-color: #27ae60; color: white; border: none; padding: 10px 22px; font-weight: 600; border-radius: 4px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                            📊 Ekspor ke Excel
+                        </button>
+                    </div>
 
                 </div>
 
                 <!-- Rendering Baris Tabel Pengunjung -->
                 <div class="table-responsive">
-                        <table id="tabel_pengunjung">
+                    <table id="tabel_pengunjung">
                         <thead>
                             <tr>
                                 <th style="width: 50px;">ID</th>
@@ -146,7 +148,7 @@ if (!$query_tamu) {
                                 while ($row = mysqli_fetch_assoc($query_tamu)): 
                             ?>
                                 <tr>
-                                    <td style="text-align: center;">
+                                    <td style="text-align: center;"><?php echo $no++; ?></td>
                                     <td><?php echo htmlspecialchars($row['nama']); ?></td>
                                     <td><?php echo htmlspecialchars($row['email']); ?></td>
                                     <td><?php echo htmlspecialchars($row['no_telepon']); ?></td>
@@ -154,7 +156,6 @@ if (!$query_tamu) {
                                     <td><?php echo htmlspecialchars($row['keperluan']); ?></td>
                                     <td style="text-align: center;">
                                         <?php 
-                                        // Ganti 'tgl_kunjungan' dengan nama kolom tanggal asli jika di database Anda namanya berbeda
                                         echo isset($row['tgl_kunjungan']) ? htmlspecialchars($row['tgl_kunjungan']) : date('Y-m-d H:i:s'); 
                                         ?>
                                     </td>
@@ -178,5 +179,19 @@ if (!$query_tamu) {
 
     </div>
 
+    <!-- Pustaka JavaScript Ekspor Otomatis & Penanganan Exclude Kolom Aksi -->
+    <!-- Pastikan fungsi eksporExcel() berada tepat di atas tag tutup body seperti ini -->
+    <script src="https://jsdelivr.net"></script>
+    <script>
+    function eksporExcel() {
+        let table = document.getElementById("tabel_pengunjung");
+        TableToExcel.convert(table, {
+            name: "Laporan_Buku_Tamu_RSI_Kendal.xlsx",
+            sheet: {
+                name: "Data Pengunjung"
+            }
+        });
+    }
+    </script>
 </body>
 </html>
