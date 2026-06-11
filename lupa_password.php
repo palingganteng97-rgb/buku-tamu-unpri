@@ -1,142 +1,226 @@
 <?php
 session_start();
+
+// 1. PENGATURAN KONEKSI DATABASE
 $host     = "localhost";
-$username = "root";         
-$password = "Slebew234";     
-$database = "db_buku_tamu"; 
+$username = "root";
+$password = "Slebew234"; // Sesuaikan dengan password HeidiSQL Anda
+$database = "db_buku_tamu";
 
-$koneksi = mysqli_connect($host, $username, $password, $database);
+// Mematikan error report bawaan agar tidak lemot terlalu lama jika gagal koneksi
+mysqli_report(MYSQLI_REPORT_OFF); 
+$koneksi = @mysqli_connect($host, $username, $password, $database);
 
-$sukses = "";
 $error = "";
+$success = "";
 
-if (isset($_POST['reset'])) {
-    $user = mysqli_real_escape_string($koneksi, $_POST['username']);
-    $pass_baru = $_POST['password_baru'];
-    $confirm_pass = $_POST['confirm_password'];
-
-    // 1. Cek apakah username terdaftar
-    $cek_user = mysqli_query($koneksi, "SELECT username FROM users WHERE username = '$user'");
-    
-    if (mysqli_num_rows($cek_user) === 0) {
-        $error = "Username tidak ditemukan!";
-    } elseif ($pass_baru !== $confirm_pass) {
-        $error = "Konfirmasi password baru tidak cocok!";
+// 2. LOGIKA KETIKA TOMBOL UPDATE PASSWORD DIKLIK
+if (isset($_POST['update_password'])) {
+    if (!$koneksi) {
+        $error = "Gagal terhubung ke database! Periksa MySQL/HeidiSQL Anda.";
     } else {
-        // 2. Enkripsi password baru
-        $password_aman = password_hash($pass_baru, PASSWORD_DEFAULT);
+        $user = mysqli_real_escape_string($koneksi, $_POST['username']);
+        $pass_baru = $_POST['password_baru'];
+        $konfirmasi_pass = $_POST['konfirmasi_password'];
 
-        // 3. Update password di database
-        $sql = "UPDATE users SET password = '$password_aman' WHERE username = '$user'";
-        if (mysqli_query($koneksi, $sql)) {
-            $sukses = "Password berhasil diperbarui! Silakan <a href='login.php' style='color: #1e88e5; font-weight: bold;'>Login</a>";
+        if ($pass_baru !== $konfirmasi_pass) {
+            $error = "Konfirmasi password baru tidak sesuai!";
         } else {
-            $error = "Gagal memperbarui password: " . mysqli_error($koneksi);
+            // Cek apakah username tersebut terdaftar di database
+            $cek_user = mysqli_query($koneksi, "SELECT username FROM users WHERE username = '$user'");
+            
+            if (mysqli_num_rows($cek_user) === 0) {
+                $error = "Username tidak ditemukan!";
+            } else {
+                // Enkripsi password baru menggunakan bcrypt
+                $password_hashed = password_hash($pass_baru, PASSWORD_DEFAULT);
+
+                // Update password ke database
+                $query = "UPDATE users SET password = '$password_hashed' WHERE username = '$user'";
+                
+                if (mysqli_query($koneksi, $query)) {
+                    $success = "Password berhasil diperbarui! Silakan login kembali.";
+                } else {
+                    $error = "Gagal memperbarui password di database!";
+                }
+            }
         }
     }
 }
-mysqli_close($koneksi);
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lupa Password - Buku Tamu</title>
-    <link href="https://jsdelivr.net" rel="stylesheet">
     <style>
-        body, html { margin: 0; padding: 0; height: 100vh; font-family: 'Arial', sans-serif; overflow: hidden; }
-        .wrapper { display: flex; height: 100vh; width: 100vw; }
-        
-        /* Sisi Kiri Tempat Mockup HP */
-        .left-side { flex: 1; background-color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; }
-        
-        /* Desain Frame Handphone Yang Proporsional */
-        .phone-mockup { 
-            width: 300px; 
-            height: 450px; 
-            border: 8px solid #2b303a; 
-            border-radius: 28px; 
-            background-color: #f8f9fa; 
-            overflow: hidden; 
-            position: relative; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            padding: 10px;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        /* Speaker Atas Handphone */
-        .phone-mockup::before {
-            content: ''; position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
-            width: 60px; height: 6px; background-color: #2b303a; border-radius: 3px; z-index: 10;
+        body {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
         }
-        /* Gambar Masuk Sempurna Tanpa Terpotong */
-        .phone-mockup img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: contain; 
-            display: block; 
-            border-radius: 12px; 
+        /* Sisi Kiri (Gambar Patrick) */
+        .left-side {
+            width: 50%;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-
-        /* Sisi Kanan Form Biru */
-        .right-side { flex: 1; background-color: #1e88e5; display: flex; align-items: center; justify-content: center; padding: 40px; }
-        .form-box { width: 100%; max-width: 360px; text-align: center; color: #ffffff; }
-        .form-box h2 { font-weight: bold; letter-spacing: 1.5px; margin-bottom: 25px; text-transform: uppercase; }
-        .form-control-capsule { background-color: #ffffff !important; border: none; border-radius: 50px !important; padding: 12px 25px; font-size: 15px; color: #333333; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 15px; }
-        .form-control-capsule::placeholder { color: #aaaaaa; text-align: center; }
-        .btn-submit-capsule { background-color: #4caf50; color: white; border: none; border-radius: 50px; padding: 12px; width: 100%; font-weight: bold; font-size: 15px; text-transform: uppercase; box-shadow: 0 4px 12px rgba(76,175,80,0.3); margin-top: 10px; }
-        .back-link { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px; display: inline-block; margin-top: 20px; }
-        @media (max-width: 768px) { .left-side { display: none; } }
+        .phone-container {
+            width: 320px;
+            border: 5px solid #2c3e50;
+            border-radius: 30px;
+            padding: 40px 15px 20px 15px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .phone-container::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            width: 60px;
+            height: 6px;
+            background-color: #2c3e50;
+            border-radius: 3px;
+        }
+        .phone-container img {
+            width: 100%;
+            border-radius: 5px;
+        }
+        /* Sisi Kanan (Form Reset Biru) */
+        .right-side {
+            width: 50%;
+            background-color: #1e88e5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+            padding: 40px;
+        }
+        .right-side h1 {
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+        form {
+            width: 100%;
+            max-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+        .input-group {
+            width: 100%;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            text-align: center;
+            color: #333;
+            outline: none;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            background-color: #4caf50;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover {
+            background-color: #43a047;
+        }
+        .links-container {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        .links-container a {
+            color: #ffffff;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+        .msg-box {
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            max-width: 340px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .error-msg {
+            background-color: #ffffe0;
+            color: #cc0000;
+        }
+        .success-msg {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
     </style>
 </head>
 <body>
 
-<div class="wrapper">
-    <!-- SISI KIRI: MEMANGGIL GAMBAR PATRICK LAIN KALI JANGAN LUPA -->
+    <!-- KOLOM KIRI -->
     <div class="left-side">
-        <div class="phone-mockup">
-            <!-- Jika saat download format file Anda adalah JFIF biasa, ganti patrick_lupa.jpg.jfif menjadi patrick_lupa.jpg -->
-            <img src="jangan_lupa.png." alt="Lain Kali Jangan Lupa">
+        <div class="phone-container">
+            <!-- Sesuaikan dengan file gambar Patrick jangan lupa Anda -->
+            <img src="jangan_lupa.png" alt="Reset Password Image" onerror="this.src='jangan_lupa.jpg'"> 
         </div>
     </div>
 
-    <!-- SISI KANAN -->
+    <!-- KOLOM KANAN -->
     <div class="right-side">
-        <div class="form-box">
-            <h2>Reset Password</h2>
+        <h1>RESET PASSWORD</h1>
 
-            <?php if($error): ?>
-                <div class="alert alert-danger py-2 small border-0 mb-3" style="border-radius: 50px; background-color: #ffebee; color: #c62828;">
-                    <?php echo $error; ?>
-                </div>
-            <?php endif; ?>
-            
-            <?php if($sukses): ?>
-                <div class="alert alert-success py-2 small border-0 mb-3" style="border-radius: 50px; background-color: #e8f5e9; color: #2e7d32;">
-                    <?php echo $sukses; ?>
-                </div>
-            <?php endif; ?>
+        <!-- Notifikasi Pesan Error / Sukses -->
+        <?php if (!empty($error)): ?>
+            <div class="msg-box error-msg"><?php echo $error; ?></div>
+        <?php endif; ?>
+        
+        <?php if (!empty($success)): ?>
+            <div class="msg-box success-msg"><?php echo $success; ?></div>
+        <?php endif; ?>
 
-            <form method="POST">
-                <div class="form-group">
-                    <input type="text" name="username" class="form-control form-control-capsule" placeholder="Masukkan Username Anda" required autocomplete="off">
-                </div>
-                <div class="form-group">
-                    <input type="password" name="password_baru" class="form-control form-control-capsule" placeholder="Password Baru" required>
-                </div>
-                <div class="form-group">
-                    <input type="password" name="confirm_password" class="form-control form-control-capsule" placeholder="Konfirmasi Password Baru" required>
-                </div>
-                <button type="submit" name="reset" class="btn btn-submit-capsule">Update Password</button>
-            </form>
+        <form action="" method="POST">
+            <div class="input-group">
+                <input type="text" name="username" placeholder="Username" required value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>">
+            </div>
+            <div class="input-group">
+                <input type="password" name="password_baru" placeholder="Password Baru" required>
+            </div>
+            <div class="input-group">
+                <input type="password" name="konfirmasi_password" placeholder="Konfirmasi Password Baru" required>
+            </div>
+            <button type="submit" name="update_password" class="btn-submit">UPDATE PASSWORD</button>
+        </form>
 
-            <a href="login.php" class="back-link" style="color: white;">Kembali ke halaman <strong style="text-decoration: underline;">Login</strong></a>
+        <div class="links-container">
+            <p>Kembali ke halaman <a href="login.php">Login</a></p>
         </div>
     </div>
-</div>
 
 </body>
 </html>
