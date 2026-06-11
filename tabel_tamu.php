@@ -25,7 +25,6 @@ $kondisi = "";
 
 if (isset($_POST['cari'])) {
     $keyword = mysqli_real_escape_string($koneksi, trim($_POST['keyword']));
-    // Filter pencarian berdasarkan Nama Tamu, Email, atau nama Instansi
     $kondisi = " WHERE nama LIKE '%$keyword%' OR email LIKE '%$keyword%' OR instansi LIKE '%$keyword%'";
 }
 
@@ -35,6 +34,45 @@ $query_tamu = mysqli_query($koneksi, $sql_tamu);
 
 if (!$query_tamu) {
     die("Query tabel gagal: " . mysqli_error($koneksi));
+}
+
+// =========================================================================
+// 5. FITUR EKSPOR EXCEL MURNI PHP (ANTI-LEMOT & LANGSUNG DOWNLOAD)
+// =========================================================================
+if (isset($_GET['aksi']) && $_GET['aksi'] == 'ekspor') {
+    header("Content-type: application/vnd-ms-excel");
+    header("Content-Disposition: attachment; filename=Laporan_Buku_Tamu_RSI_Kendal.xls");
+    
+    echo "<h2>LAPORAN DATA PENGUNJUNG - Buku Tamu RSI Kendal</h2>";
+    echo "<table border='1'>";
+    echo "<thead>
+            <tr>
+                <th>No</th>
+                <th>Nama Tamu</th>
+                <th>Email</th>
+                <th>No. Telepon</th>
+                <th>Instansi / Lembaga</th>
+                <th>Keperluan</th>
+                <th>Waktu Kunjungan</th>
+            </tr>
+          </thead>
+          <tbody>";
+    
+    $no = 1;
+    $query_excel = mysqli_query($koneksi, "SELECT * FROM tamu ORDER BY id DESC");
+    while ($row = mysqli_fetch_assoc($query_excel)) {
+        echo "<tr>
+                <td style='text-align:center;'>".$no++."</td>
+                <td>".htmlspecialchars($row['nama'])."</td>
+                <td>".htmlspecialchars($row['email'])."</td>
+                <td>'".$row['no_telepon']."</td>
+                <td>".htmlspecialchars($row['instansi'])."</td>
+                <td>".htmlspecialchars($row['keperluan'])."</td>
+                <td>".(isset($row['tgl_kunjungan']) ? $row['tgl_kunjungan'] : date('Y-m-d H:i:s'))."</td>
+              </tr>";
+    }
+    echo "</tbody></table>";
+    exit();
 }
 ?>
 <!DOCTYPE html>
@@ -55,14 +93,12 @@ if (!$query_tamu) {
         .main-container { flex: 1; padding: 30px; }
         .white-card { background: #fff; padding: 25px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         
-        /* Gaya Desain Tabel */
         .table-responsive { width: 100%; overflow-x: auto; margin-top: 10px; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
         th { background-color: #f8f9fa; color: #333; font-weight: 600; padding: 12px; border: 1px solid #dee2e6; text-align: center; }
         td { padding: 12px; border: 1px solid #dee2e6; color: #495057; }
         tr:nth-child(even) { background-color: #fdfdfd; }
         
-        /* Gaya Desain Tombol Aksi */
         .btn-action { padding: 6px 12px; border: none; border-radius: 4px; color: white; cursor: pointer; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-block; }
         .btn-edit { background-color: #00a8ff; margin-right: 5px; }
         .btn-delete { background-color: #e84118; }
@@ -78,7 +114,6 @@ if (!$query_tamu) {
 
     <div class="dashboard-layout">
         
-        <!-- Sidebar Menu Berurutan Rapi -->
         <div class="sidebar-menu">
             <div>
                 <a href="tampilkan.php">DASHBOARD</a>
@@ -91,17 +126,14 @@ if (!$query_tamu) {
             </div>
         </div>
 
-        <!-- Kontainer Utama -->
         <div class="main-container">
             <div class="white-card">
                 
                 <h2 style="margin-top: 0; margin-bottom: 5px; font-weight: 600; color: #333;">DATA PENGUNJUNG</h2>
                 <p style="color: #777; margin-bottom: 25px; font-size: 14px;">Log Riwayat Aktivitas Buku Tamu</p>
                 
-                <!-- BARIS KONTROL: FITUR CARI (KIRI) & TOMBOL AKSI (KANAN) -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
                     
-                    <!-- Form Fitur Pencarian Data -->
                     <form action="" method="POST" style="display: flex; gap: 8px; width: 100%; max-width: 400px; margin: 0;">
                         <input type="text" name="keyword" placeholder="Cari nama, email, atau instansi..." value="<?php echo htmlspecialchars($keyword); ?>" style="flex: 1; padding: 10px 14px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; outline: none;">
                         <button type="submit" name="cari" style="background-color: #3498db; color: white; border: none; padding: 10px 20px; font-weight: 600; border-radius: 4px; cursor: pointer; font-size: 14px;">Cari</button>
@@ -111,24 +143,20 @@ if (!$query_tamu) {
                         <?php endif; ?>
                     </form>
 
-                    <!-- Group Tombol Tambah & Ekspor (Kanan) -->
                     <div style="display: flex; gap: 10px;">
-                        <!-- Tombol Tambah Tamu Baru (Create) -->
-                        <a href="tambah.php" style="background-color: #2ecc71; color: white; text-decoration: none; padding: 10px 22px; font-weight: 600; border-radius: 4px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: background 0.2s;">
+                        <a href="tambah.php" style="background-color: #2ecc71; color: white; text-decoration: none; padding: 10px 22px; font-weight: 600; border-radius: 4px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: inline-block;">
                             + Tambah Tamu Baru
                         </a>
 
-                        <!-- Tombol Ekspor ke Excel (Sudah Dilengkapi fungsi onclick) -->
-                        <button onclick="eksporExcel()" style="background-color: #27ae60; color: white; border: none; padding: 10px 22px; font-weight: 600; border-radius: 4px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                        <a href="tabel_tamu.php?aksi=ekspor" style="background-color: #27ae60; color: white; text-decoration: none; padding: 10px 22px; font-weight: 600; border-radius: 4px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: inline-flex; align-items: center; gap: 8px;">
                             📊 Ekspor ke Excel
-                        </button>
+                        </a>
                     </div>
 
                 </div>
 
-                <!-- Rendering Baris Tabel Pengunjung -->
                 <div class="table-responsive">
-                    <table id="tabel_pengunjung">
+                    <table>
                         <thead>
                             <tr>
                                 <th style="width: 50px;">ID</th>
@@ -138,7 +166,7 @@ if (!$query_tamu) {
                                 <th>Instansi / Lembaga</th>
                                 <th>Keperluan</th>
                                 <th style="width: 150px;">Waktu Kunjungan</th>
-                                <th style="width: 120px;" data-exclude="true">Aksi</th>
+                                <th style="width: 120px;">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -155,17 +183,16 @@ if (!$query_tamu) {
                                     <td><?php echo htmlspecialchars($row['instansi']); ?></td>
                                     <td><?php echo htmlspecialchars($row['keperluan']); ?></td>
                                     <td style="text-align: center;">
-                                        <?php 
-                                        echo isset($row['tgl_kunjungan']) ? htmlspecialchars($row['tgl_kunjungan']) : date('Y-m-d H:i:s'); 
-                                        ?>
+                                        <?php echo isset($row['tgl_kunjungan']) ? htmlspecialchars($row['tgl_kunjungan']) : date('Y-m-d H:i:s'); ?>
                                     </td>
-                                    <td style="text-align: center;" data-exclude="true">
+                                    <td style="text-align: center;">
                                         <a href="edit.php?id=<?php echo $row['id']; ?>" class="btn-action btn-edit">✏️</a>
-                                        <a href="hapus.php?id=<?php echo $row['id']; ?>" class="btn-action btn-delete" onclick="return confirm('Apakah Anda yakin ingin menghapus data tamu ini?')">🗑️</a>
                                     </td>
                                 </tr>
-                                <?php endwhile; ?>
-                            <?php else: ?>
+                            <?php 
+                                    endwhile; 
+                                else: 
+                            ?>
                                 <tr>
                                     <td colspan="8" style="text-align: center; color: #999; padding: 20px;">Data tamu tidak ditemukan.</td>
                                 </tr>
@@ -178,20 +205,5 @@ if (!$query_tamu) {
         </div>
 
     </div>
-
-    <!-- Pustaka JavaScript Ekspor Otomatis & Penanganan Exclude Kolom Aksi -->
-    <!-- Pastikan fungsi eksporExcel() berada tepat di atas tag tutup body seperti ini -->
-    <script src="https://jsdelivr.net"></script>
-    <script>
-    function eksporExcel() {
-        let table = document.getElementById("tabel_pengunjung");
-        TableToExcel.convert(table, {
-            name: "Laporan_Buku_Tamu_RSI_Kendal.xlsx",
-            sheet: {
-                name: "Data Pengunjung"
-            }
-        });
-    }
-    </script>
 </body>
 </html>
