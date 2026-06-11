@@ -130,20 +130,19 @@ if (isset($_GET['search'])) {
     <div class="dashboard-layout">
         
        <!-- Sidebar Menu yang Sudah Dirapikan -->
+<!-- Sidebar Menu di file data_instansi.php -->
 <div class="sidebar-menu" style="display: flex; flex-direction: column; min-height: calc(100vh - 52px); justify-content: space-between;">
-    <!-- Grup Menu Utama (Urutan Logis) -->
     <div>
         <a href="tampilkan.php">DASHBOARD</a>
         <a href="tabel_tamu.php">TABEL TAMU</a>
-        <a href="data_instansi.php">DATA INSTANSI</a>
-        <a href="manajemen_akun.php" class="active">MANAJEMEN AKUN</a>
+        <a href="data_instansi.php" class="active">DATA INSTANSI</a> <!-- PINDAHKAN KE SINI KAWAN -->
+        <a href="manajemen_akun.php">MANAJEMEN AKUN</a> <!-- HAPUS kata class="active" dari sini -->
     </div>
-    
-    <!-- Grup Menu Keluar -->
     <div style="padding-bottom: 20px;">
         <a href="logout.php" class="logout-btn" style="color: #e74c3c; font-weight: 600; text-decoration: none; display: block; padding: 15px 20px;">LOGOUT</a>
     </div>
 </div>
+
 
 
         <!-- Area Konten Utama Sebelah Kanan -->
