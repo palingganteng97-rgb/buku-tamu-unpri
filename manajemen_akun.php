@@ -116,8 +116,8 @@ if (isset($_POST['switch_account'])) {
 <body>
 
     <div class="header-nav">
-        Sistem Informasi Buku Tamu Universitas Prima Indonesia
-    </div>
+                Buku Tamu RIS Kendal
+</div>
 
     <div class="dashboard-layout">
         
