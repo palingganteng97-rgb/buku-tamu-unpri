@@ -94,7 +94,6 @@ $query = mysqli_query($koneksi, "SELECT * FROM tamu ORDER BY id DESC");
                 <a href="tampilkan.php">Dashboard</a>
                 <a class="active" href="tabel_tamu.php">Tabel Tamu</a>
                 <a href="data_instansi.php">Data Instansi</a>
-                <a href="tambah.php">Tambah Tamu</a>
                 <a href="manajemen_akun.php">MANAJEMEN AKUN</a>
             </div>
             <a href="logout.php" class="logout-link">Logout</a>
