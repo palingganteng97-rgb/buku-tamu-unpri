@@ -1,147 +1,220 @@
 <?php
-$host     = "localhost";
-$username = "root";         
-$password = "Slebew234";     
-$database = "db_buku_tamu"; 
+session_start();
 
-$koneksi = mysqli_connect($host, $username, $password, $database);
+// 1. PENGATURAN KONEKSI DATABASE
+$host     = "localhost";
+$username = "root";
+$password = "Slebew234"; 
+$database = "db_buku_tamu";
+
+mysqli_report(MYSQLI_REPORT_OFF); 
+$koneksi = @mysqli_connect($host, $username, $password, $database);
 
 $error = "";
+$success = "";
 
+// 2. LOGIKA KETIKA TOMBOL SUBMIT DIKLIK
 if (isset($_POST['register'])) {
-    $user = mysqli_real_escape_string($koneksi, $_POST['username']);
-    $pass = $_POST['password'];
-    $confirm_pass = $_POST['confirm_password'];
-
-    if ($pass !== $confirm_pass) {
-        $error = "Konfirmasi password tidak cocok!";
+    if (!$koneksi) {
+        $error = "Gagal terhubung ke database! Periksa MySQL/HeidiSQL Anda.";
     } else {
-        $password_aman = password_hash($pass, PASSWORD_DEFAULT);
+        $user = mysqli_real_escape_string($koneksi, $_POST['username']);
+        $pass = $_POST['password'];
+        $konfirmasi_pass = $_POST['konfirmasi_password'];
 
-        $cek_user = mysqli_query($koneksi, "SELECT username FROM users WHERE username = '$user'");
-        if (mysqli_num_rows($cek_user) > 0) {
-            $error = "Username sudah terdaftar!";
+        if ($pass !== $konfirmasi_pass) {
+            $error = "Konfirmasi password tidak sesuai!";
         } else {
-            $sql = "INSERT INTO users (username, password) VALUES ('$user', '$password_aman')";
-            if (mysqli_query($koneksi, $sql)) {
-                // JIKA BERHASIL: Tutup koneksi lalu langsung alihkan ke halaman login
-                mysqli_close($koneksi);
-                header("Location: login.php");
-                exit(); 
+            $cek_user = mysqli_query($koneksi, "SELECT username FROM users WHERE username = '$user'");
+            
+            if (mysqli_num_rows($cek_user) > 0) {
+                $error = "Username sudah digunakan!";
             } else {
-                $error = "Gagal registrasi: " . mysqli_error($koneksi);
+                $password_hashed = password_hash($pass, PASSWORD_DEFAULT);
+                $query = "INSERT INTO users (username, password) VALUES ('$user', '$password_hashed')";
+                
+                if (mysqli_query($koneksi, $query)) {
+                    $success = "Registrasi berhasil! Silakan login.";
+                } else {
+                    $error = "Gagal menyimpan data ke database!";
+                }
             }
         }
     }
 }
-mysqli_close($koneksi);
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Buku Tamu</title>
-    <link href="https://jsdelivr.net" rel="stylesheet">
-    <link href="https://cloudflare.com" rel="stylesheet">
-    
     <style>
-        body, html { margin: 0; padding: 0; height: 100vh; font-family: 'Arial', sans-serif; overflow: hidden; }
-        .register-wrapper { display: flex; height: 100vh; width: 100vw; }
-
-        /* Sisi Kiri Tempat Mockup HP */
-        .left-side { flex: 1; background-color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; }
-
-        /* Desain Frame Handphone Yang Proporsional */
-        .phone-mockup { 
-            width: 300px; 
-            height: 450px; 
-            border: 8px solid #2b303a; 
-            border-radius: 28px; 
-            background-color: #f8f9fa; 
-            overflow: hidden; 
-            position: relative; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15); 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        /* Speaker Atas Handphone */
-        .phone-mockup::before {
+        body {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+        /* Sisi Kiri (Gambar Patrick Daftar) */
+        .left-side {
+            width: 50%;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .phone-container {
+            width: 320px;
+            border: 5px solid #2c3e50;
+            border-radius: 30px;
+            padding: 40px 15px 20px 15px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .phone-container::before {
             content: '';
             position: absolute;
-            top: 12px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: 15px;
             width: 60px;
             height: 6px;
-            background-color: #2b303a;
+            background-color: #2c3e50;
             border-radius: 3px;
-            z-index: 10;
         }
-        /* Gambar Mengisi Layar HP Tanpa Terpotong */
-        .phone-mockup img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: contain; 
-            display: block; 
-            border-radius: 12px;
+        .phone-container img {
+            width: 100%;
+            border-radius: 5px;
         }
-
-        /* Sisi Kanan Form Biru */
-        .right-side { flex: 1; background-color: #1e88e5; display: flex; align-items: center; justify-content: center; padding: 40px; }
-        .register-form-box { width: 100%; max-width: 360px; text-align: center; color: #ffffff; }
-        .register-form-box h2 { font-weight: bold; letter-spacing: 1.5px; margin-bottom: 25px; text-transform: uppercase; }
-        .form-control-capsule { background-color: #ffffff !important; border: none; border-radius: 50px !important; padding: 12px 25px; font-size: 15px; color: #333333; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 15px; }
-        .form-control-capsule::placeholder { color: #aaaaaa; text-align: center; }
-        .btn-submit-capsule { background-color: #4caf50; color: white; border: none; border-radius: 50px; padding: 12px; width: 100%; font-weight: bold; font-size: 15px; text-transform: uppercase; box-shadow: 0 4px 12px rgba(76,175,80,0.3); margin-top: 10px; }
-        .login-link { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px; display: inline-block; margin-top: 20px; }
-        @media (max-width: 768px) { .left-side { display: none; } }
+        /* Sisi Kanan (Form Register) */
+        .right-side {
+            width: 50%;
+            background-color: #1e88e5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+            padding: 40px;
+        }
+        .right-side h1 {
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+        form {
+            width: 100%;
+            max-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+        .input-group {
+            width: 100%;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            text-align: center;
+            color: #333;
+            outline: none;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            background-color: #4caf50;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover {
+            background-color: #43a047;
+        }
+        .links-container {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        .links-container a {
+            color: #ffffff;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+        .msg-box {
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            max-width: 340px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .error-msg {
+            background-color: #ffffe0;
+            color: #cc0000;
+        }
+        .success-msg {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
     </style>
 </head>
 <body>
 
-<div class="register-wrapper">
-    
-    <!-- SISI KIRI: GAMBAR PATRICK DI DALAM LAYAR HP -->
+    <!-- KOLOM KIRI -->
     <div class="left-side">
-        <div class="phone-mockup">
-            <!-- Menyesuaikan dengan nama file gambar Anda yang sukses muncul -->
-            <img src="daftar.jfif" alt="Ayo Daftar Sekarang">
+        <div class="phone-container">
+            <!-- Menggunakan file daftar.png untuk gambar daftar -->
+            <img src="daftar.png" alt="Register Image"> 
         </div>
     </div>
 
-    <!-- SISI KANAN -->
+    <!-- KOLOM KANAN -->
     <div class="right-side">
-        <div class="register-form-box">
-            <h2>Register</h2>
+        <h1>REGISTER</h1>
 
-            <?php if($error): ?>
-                <div class="alert alert-danger py-2 small border-0 mb-3 text-center" style="border-radius: 50px; background-color: #ffebee; color: #c62828;">
-                    <?php echo $error; ?>
-                </div>
-            <?php endif; ?>
+        <?php if (!empty($error)): ?>
+            <div class="msg-box error-msg"><?php echo $error; ?></div>
+        <?php endif; ?>
+        
+        <?php if (!empty($success)): ?>
+            <div class="msg-box success-msg"><?php echo $success; ?></div>
+        <?php endif; ?>
 
-            <form method="POST">
-                <div class="form-group">
-                    <input type="text" name="username" class="form-control form-control-capsule" placeholder="Username" required autocomplete="off">
-                </div>
-                <div class="form-group">
-                    <input type="password" name="password" class="form-control form-control-capsule" placeholder="Password Baru" required>
-                </div>
-                <div class="form-group">
-                    <input type="password" name="confirm_password" class="form-control form-control-capsule" placeholder="Konfirmasi Password" required>
-                </div>
-                <button type="submit" name="register" class="btn btn-submit-capsule">Submit</button>
-            </form>
+        <form action="" method="POST">
+            <div class="input-group">
+                <input type="text" name="username" placeholder="Username" required value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>">
+            </div>
+            <div class="input-group">
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+            <div class="input-group">
+                <input type="password" name="konfirmasi_password" placeholder="Konfirmasi Password" required>
+            </div>
+            <button type="submit" name="register" class="btn-submit">SUBMIT</button>
+        </form>
 
-            <a href="login.php" class="login-link" style="color:white;">Sudah memiliki akun admin? <strong style="text-decoration:underline;">Login disini</strong></a>
+        <div class="links-container">
+            <p>Sudah memiliki akun admin? <a href="login.php">Login disini</a></p>
         </div>
     </div>
-
-</div>
 
 </body>
 </html>
