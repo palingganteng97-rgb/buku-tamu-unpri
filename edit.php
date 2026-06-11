@@ -1,207 +1,192 @@
 <?php
+// 1. Pengaturan Session & Proteksi Login
 session_start();
+
 if (!isset($_SESSION['login'])) {
     header("Location: login.php");
     exit();
 }
-// ... kode konfigurasi database di bawahnya tetap dilanjutkan
 
+// 2. Koneksi ke Database Anda
 $host     = "localhost";
-$username = "root";         
-$password = "Slebew234";     
-$database = "db_buku_tamu"; 
+$username = "root";
+$password = "Slebew234"; // Sesuai password MySQL laptop Anda
+$database = "db_buku_tamu";
 
 $koneksi = mysqli_connect($host, $username, $password, $database);
 
 if (!$koneksi) {
-    die("Koneksi gagal: " . mysqli_connect_error());
+    die("Koneksi database gagal: " . mysqli_connect_error());
 }
 
-// 1. Ambil data lama berdasarkan ID untuk ditampilkan di form
-if (isset($_GET['id'])) {
-    $id = mysqli_real_escape_string($koneksi, $_GET['id']);
-    $query = mysqli_query($koneksi, "SELECT * FROM tamu WHERE id = '$id'");
-    $data = mysqli_fetch_assoc($query);
-    
-    if (!$data) {
-        die("Data tidak ditemukan.");
-    }
-} else {
-    header("Location: tampilkan.php");
+// 3. Tangkap ID Tamu yang Akan Diedit
+if (!isset($_GET['id']) || empty($_GET['id'])) {
+    header("Location: tabel_tamu.php");
+    exit();
+}
+$id = mysqli_real_escape_string($koneksi, $_GET['id']);
+
+// Ambil data tamu lama berdasarkan ID
+$query_tamu_lama = mysqli_query($koneksi, "SELECT * FROM tamu WHERE id='$id'");
+$data_tamu = mysqli_fetch_assoc($query_tamu_lama);
+
+if (!$data_tamu) {
+    echo "<script>alert('Data tamu tidak ditemukan!'); window.location='tabel_tamu.php';</script>";
     exit();
 }
 
-// 2. Proses update data saat tombol simpan perubahan ditekan
-if (isset($_POST['update'])) {
+// 4. Ambil data instansi untuk pilihan Dropdown (Anti-Looping)
+$sql_instansi = "SELECT * FROM data_instansi ORDER BY nama_instansi ASC";
+$query_opsi_instansi = mysqli_query($koneksi, $sql_instansi);
+
+$error = "";
+
+// 5. Proses ketika tombol Update ditekan
+if (isset($_POST['submit'])) {
     $nama       = mysqli_real_escape_string($koneksi, $_POST['nama']);
     $email      = mysqli_real_escape_string($koneksi, $_POST['email']);
     $no_telepon = mysqli_real_escape_string($koneksi, $_POST['no_telepon']);
+    $keperluan  = mysqli_real_escape_string($koneksi, $_POST['keperluan']);
     
-    // Logika menangkap pilihan instansi dropdown atau ketik manual jika pilih 'Lainnya'
     $instansi_pilihan = mysqli_real_escape_string($koneksi, $_POST['instansi']);
-    if ($instansi_pilihan == "Lainnya") {
+    if ($instansi_pilihan === "Lainnya") {
         $instansi = mysqli_real_escape_string($koneksi, $_POST['instansi_lainnya']);
+        if (!empty($instansi)) {
+            $cek_instansi = mysqli_query($koneksi, "SELECT * FROM data_instansi WHERE nama_instansi='$instansi'");
+            if (mysqli_num_rows($cek_instansi) == 0) {
+                mysqli_query($koneksi, "INSERT INTO data_instansi (nama_instansi) VALUES ('$instansi')");
+            }
+        }
     } else {
         $instansi = $instansi_pilihan;
     }
-    
-    $keperluan  = mysqli_real_escape_string($koneksi, $_POST['keperluan']);
 
-    $sql = "UPDATE tamu SET nama='$nama', email='$email', no_telepon='$no_telepon', instansi='$instansi', keperluan='$keperluan' WHERE id='$id'";
-
-    if (mysqli_query($koneksi, $sql)) {
-        mysqli_close($koneksi);
-        header("Location: tabel_tamu.php");
-        exit();
+    if (empty($nama) || empty($no_telepon) || empty($instansi) || empty($keperluan)) {
+        $error = "Silakan isi semua kolom yang wajib diisi!";
     } else {
-        echo "Gagal memperbarui data: " . mysqli_error($koneksi);
+        // Query UPDATE data tamu
+        $sql_update = "UPDATE tamu SET nama='$nama', email='$email', no_telepon='$no_telepon', instansi='$instansi', keperluan='$keperluan' WHERE id='$id'";
+        
+        if (mysqli_query($koneksi, $sql_update)) {
+            header("Location: tabel_tamu.php");
+            exit();
+        } else {
+            $error = "Gagal memperbarui data: " . mysqli_error($koneksi);
+        }
     }
 }
-
-// Daftar array instansi resmi untuk dicocokkan di dropdown select
-$daftar_instansi = [
-    "Kementerian Dalam Negeri",
-    "Kementerian Luar Negeri",
-    "Kementerian Pertahanan",
-    "Kementerian Keuangan",
-    "Kementerian Kesehatan",
-    "Kementerian Sosial",
-    "Kementerian Komunikasi dan Informatika",
-    "Kementerian Pendidikan, Kebudayaan, Riset, dan Teknologi",
-    "Kementerian Agama",
-    "Kementerian Badan Usaha Milik Negara",
-    "Pemerintah Provinsi (Pemprov)",
-    "Pemerintah Kabupaten/Kota (Pemkab/Pemkot)",
-    "Tentara Nasional Indonesia (TNI)",
-    "Kepolisian Republik Indonesia (POLRI)",
-    "Universitas / Sekolah / Institusi Pendidikan",
-    "Masyarakat Umum / Perorangan"
-];
-
-// Cek apakah data instansi lama terdaftar di sistem dropdown atau hasil ketik manual
-$is_custom_instansi = !in_array($data['instansi'], $daftar_instansi);
 ?>
-
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Data Tamu</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://jsdelivr.net" rel="stylesheet">
-    <!-- Select2 CSS untuk Fitur Pencarian di Dropdown -->
-    <link href="https://jsdelivr.net" rel="stylesheet" />
+    <title>Buku Tamu RSI Kendal - Edit Data Tamu</title>
     <style>
-        body { background-color: #f5f6fa; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 40px; }
-        .form-card { max-width: 700px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        h3 { margin-top: 0; margin-bottom: 25px; color: #333; font-weight: 700; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #495057; font-size: 14px; }
-        .form-control-custom { width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
-        
-        .select2-container--default .select2-selection--single {
-            height: 44px !important;
-            padding: 7px 12px;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__arrow { height: 42px !important; }
-        .row-flex { display: flex; gap: 20px; }
-        .col-flex { flex: 1; }
-        .btn-container { display: flex; justify-content: space-between; margin-top: 30px; }
-        .btn { padding: 11px 24px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; text-decoration: none; font-size: 14px; }
-        .btn-save { background-color: #624bff; color: white; }
-        .btn-save:hover { background-color: #4e36cc; }
-        .btn-cancel { background-color: #6c757d; color: white; padding: 10px 20px; border: 1px solid #ced4da; background: #ffffff; color: #6c757d; }
-        .btn-cancel:hover { background: #f8f9fa; }
-        @media (max-width: 576px) { .row-flex { flex-direction: column; gap: 0; } }
+        * { box-sizing: border-box; }
+        body { background-color: #5d3fd3; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; }
+        .banner { text-align: center; color: white; padding: 25px 0; font-size: 18px; font-weight: 500; }
+        .container { width: 100%; max-width: 680px; margin: 0 auto 50px auto; padding: 0 15px; }
+        .form-card { background: white; border-radius: 10px; padding: 40px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
+        .form-group { margin-bottom: 22px; }
+        .form-group label { display: block; font-weight: 600; color: #333; margin-bottom: 8px; font-size: 15px; }
+        .form-group label span { color: #dc3545; }
+        .form-input { width: 100%; padding: 12px 14px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; color: #333; outline: none; }
+        .form-input:focus { border-color: #5d3fd3; }
+        textarea.form-input { resize: vertical; font-family: inherit; }
+        .alert-error { background-color: #f8d7da; color: #721c24; padding: 12px 15px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; border: 1px solid #f5c6cb; }
+        .btn-group { display: flex; justify-content: space-between; margin-top: 35px; }
+        .btn { padding: 12px 28px; font-size: 15px; font-weight: 600; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; text-align: center; }
+        .btn-back { background-color: #f8f9fa; color: #495057; border: 1px solid #ced4da; }
+        .btn-submit { background-color: #5d3fd3; color: white; border: none; }
     </style>
 </head>
 <body>
 
-    <div class="form-card">
-        <h3>Edit Data Kunjungan</h3>
-        <form method="POST">
-            <div class="form-group">
-                <label for="nama">Nama Lengkap <span style="color: red;">*</span></label>
-                <input type="text" class="form-control-custom" id="nama" name="nama" value="<?php echo htmlspecialchars($data['nama']); ?>" required>
-            </div>
-
-            <div class="row-flex">
-                <div class="col-flex form-group">
-                    <label for="email">Alamat Email</label>
-                    <input type="email" class="form-control-custom" id="email" name="email" value="<?php echo htmlspecialchars($data['email']); ?>">
-                </div>
-                <div class="col-flex form-group">
-                    <label for="no_telepon">No. Telepon / WhatsApp</label>
-                    <input type="text" class="form-control-custom" id="no_telepon" name="no_telepon" value="<?php echo htmlspecialchars($data['no_telepon']); ?>">
-                </div>
-            </div>
-
-            <!-- DROPDOWN PADA HALAMAN EDIT -->
-            <div class="form-group">
-                <label for="instansi">Instansi / Perusahaan <span style="color: red;">*</span></label>
-                <select class="form-control-custom" id="instansi" name="instansi" required style="width: 100%;">
-                    <option value="" disabled>-- Cari atau Pilih Instansi Anda --</option>
-                    <?php 
-                    foreach ($daftar_instansi as $inst) {
-                        $selected = ($data['instansi'] == $inst) ? 'selected' : '';
-                        echo "<option value='$inst' $selected>$inst</option>";
-                    }
-                    ?>
-                    <option value="Lainnya" <?php echo ($is_custom_instansi) ? 'selected' : ''; ?>>-- Swasta / Cari Tidak Ada (Ketik Manual) --</option>
-                </select>
-                
-                <!-- Input Manual Tambahan -->
-                <input type="text" class="form-control-custom" id="instansi_lainnya" name="instansi_lainnya" 
-                       value="<?php echo ($is_custom_instansi) ? htmlspecialchars($data['instansi']) : ''; ?>" 
-                       placeholder="Ketik spesifik nama PT / Dinas / Instansi Anda di sini..." 
-                       style="display: <?php echo ($is_custom_instansi) ? 'block' : 'none'; ?>; margin-top: 10px;">
-            </div>
-
-            <div class="form-group" style="margin-top: 25px;">
-                <label for="keperluan">Keperluan Kunjungan <span style="color: red;">*</span></label>
-                <textarea class="form-control-custom" id="keperluan" name="keperluan" rows="4" required style="resize: vertical;"><?php echo htmlspecialchars($data['keperluan']); ?></textarea>
-            </div>
-
-            <div class="btn-container">
-                <a href="tampilkan.php" class="btn btn-cancel">Batal</a>
-                <button type="submit" name="update" class="btn btn-save">Simpan Perubahan</button>
-            </div>
-        </form>
+    <div class="banner">
+        Ubah Data Kunjungan Tamu (ID: <?php echo htmlspecialchars($id); ?>)
     </div>
 
-    <!-- Pustaka JQuery dan Select2 JS -->
-    <script src="https://jquery.com"></script>
-    <script src="https://jsdelivr.net"></script>
+    <div class="container">
+        <div class="form-card">
+            
+            <?php if (!empty($error)): ?>
+                <div class="alert-error">
+                    <?= $error; ?>
+                </div>
+            <?php endif; ?>
+
+            <form action="" method="POST">
+                
+                <div class="form-group">
+                    <label for="nama">Nama Lengkap <span>*</span></label>
+                    <input type="text" class="form-input" id="nama" name="nama" value="<?php echo htmlspecialchars($data_tamu['nama']); ?>" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Alamat Email</label>
+                    <input type="email" class="form-input" id="email" name="email" value="<?php echo htmlspecialchars($data_tamu['email']); ?>">
+                </div>
+
+                <div class="form-group">
+                    <label for="no_telepon">No. Telepon / WhatsApp <span>*</span></label>
+                    <input type="text" class="form-input" id="no_telepon" name="no_telepon" value="<?php echo htmlspecialchars($data_tamu['no_telepon']); ?>" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="instansi_select">Instansi / Perusahaan <span>*</span></label>
+                    <select class="form-input" id="instansi_select" name="instansi" onchange="toggleInstansiLainnya()" required>
+                        <!-- Tampilkan instansi yang saat ini tersimpan -->
+                        <option value="<?php echo htmlspecialchars($data_tamu['instansi']); ?>" selected><?php echo htmlspecialchars($data_tamu['instansi']); ?> (Saat ini)</option>
+                        
+                        <?php if ($query_opsi_instansi): ?>
+                            <?php while($row_instansi = mysqli_fetch_assoc($query_opsi_instansi)): ?>
+                                <?php if($row_instansi['nama_instansi'] != $data_tamu['instansi']): ?>
+                                    <option value="<?= htmlspecialchars($row_instansi['nama_instansi']); ?>">
+                                        <?= htmlspecialchars($row_instansi['nama_instansi']); ?>
+                                    </option>
+                                <?php endif; ?>
+                            <?php endwhile; ?>
+                        <?php endif; ?>
+                        <option value="Lainnya">-- Instansi Lainnya (Ketik Manual) --</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="field_instansi_lainnya" style="display: none;">
+                    <label for="input_instansi_lainnya">Tulis Nama Instansi Baru <span>*</span></label>
+                    <input type="text" class="form-input" id="input_instansi_lainnya" name="instansi_lainnya" placeholder="Ketik nama instansi baru di sini">
+                </div>
+
+                <div class="form-group">
+                    <label for="keperluan">Keperluan Kunjungan <span>*</span></label>
+                    <textarea class="form-input" id="keperluan" name="keperluan" rows="4" required><?php echo htmlspecialchars($data_tamu['keperluan']); ?></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <a href="tabel_tamu.php" class="btn btn-back">Batal</a>
+                    <button type="submit" name="submit" class="btn btn-submit">Simpan Perubahan</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
     <script>
-    $(document).ready(function() {
-        // Inisialisasi Select2
-        $('#instansi').select2({
-            placeholder: "-- Cari atau Pilih Instansi Anda --",
-            allowClear: true
-        });
-        
-        // Memperbaiki deteksi perubahan agar fungsi select2 sinkron dengan input teks manual
-        $('#instansi').on('select2:select', function (e) {
-            cekInstansiLainnya(e.params.data.id);
-        });
+        function toggleInstansiLainnya() {
+            var selectBox = document.getElementById("instansi_select");
+            var inputDiv = document.getElementById("field_instansi_lainnya");
+            var inputField = document.getElementById("input_instansi_lainnya");
 
-        // Jalankan pengecekan di awal saat halaman pertama kali dimuat
-        cekInstansiLainnya($('#instansi').val());
-    });
-
-    function cekInstansiLainnya(nilai){
-        var elemenKetikManual = $('#instansi_lainnya');
-        if(nilai == 'Lainnya') {
-            elemenKetikManual.show();
-            elemenKetikManual.prop('required', true);
-        } else {
-            elemenKetikManual.hide();
-            elemenKetikManual.prop('required', false);
+            if (selectBox.value === "Lainnya") {
+                inputDiv.style.display = "block";
+                inputField.setAttribute("required", "required");
+                inputField.focus();
+            } else {
+                inputDiv.style.display = "none";
+                inputField.removeAttribute("required");
+                inputField.value = "";
+            }
         }
-    }
     </script>
 </body>
 </html>
