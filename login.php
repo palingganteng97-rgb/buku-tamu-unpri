@@ -1,149 +1,205 @@
 <?php
 session_start();
-if (isset($_SESSION['login'])) {
-    header("Location: tampilkan.php");
-    exit();
-}
 
+// 1. PENGATURAN KONEKSI DATABASE
 $host     = "localhost";
-$username = "root";         
-$password = "Slebew234";     
-$database = "db_buku_tamu"; 
+$username = "root";
+$password = "Slebew234"; // Sesuai database HeidiSQL Anda
+$database = "db_buku_tamu";
 
-$koneksi = mysqli_connect($host, $username, $password, $database);
+// Mengatur timeout koneksi agar tidak lemot terlalu lama jika gagal
+mysqli_report(MYSQLI_REPORT_OFF); 
+$koneksi = @mysqli_connect($host, $username, $password, $database);
 
 $error = "";
 
+// 2. LOGIKA KETIKA TOMBOL SUBMIT DIKLIK
 if (isset($_POST['login'])) {
-    $user = mysqli_real_escape_string($koneksi, $_POST['username']);
-    $pass = $_POST['password'];
+    if (!$koneksi) {
+        // Jika database bermasalah, langsung tampilkan error alih-alih loading lemot
+        $error = "Gagal terhubung ke database! Periksa HeidiSQL/MySQL Anda.";
+    } else {
+        $user = mysqli_real_escape_string($koneksi, $_POST['username']);
+        $pass = $_POST['password'];
 
-    $result = mysqli_query($koneksi, "SELECT * FROM users WHERE username = '$user'");
-    
-    if (mysqli_num_rows($result) === 1) {
-        $row = mysqli_fetch_assoc($result);
-        if (password_verify($pass, $row['password'])) {
-            $_SESSION['login'] = true;
-            $_SESSION['admin_user'] = $row['username'];
-            
-            header("Location: tampilkan.php");
-            exit();
+        $result = mysqli_query($koneksi, "SELECT * FROM users WHERE username = '$user'");
+
+        if (mysqli_num_rows($result) === 1) {
+            $row = mysqli_fetch_assoc($result);
+            if (password_verify($pass, $row['password'])) {
+                $_SESSION['login'] = true;
+                $_SESSION['admin_user'] = $row['username'];
+                header("Location: tampilkan.php");
+                exit();
+            } else {
+                $error = "Password salah!";
+            }
+        } else {
+            $error = "Username tidak ditemukan!";
         }
     }
-    $error = "Username atau Password salah!";
 }
-mysqli_close($koneksi);
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Buku Tamu</title>
-    <link href="https://jsdelivr.net" rel="stylesheet">
-    <link href="https://cloudflare.com" rel="stylesheet">
-    
     <style>
-        body, html { margin: 0; padding: 0; height: 100vh; font-family: 'Arial', sans-serif; overflow: hidden; }
-        .login-wrapper { display: flex; height: 100vh; width: 100vw; }
-        
-        /* Sisi Kiri Tempat Mockup HP */
-        .left-side { flex: 1; background-color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; }
-        
-                /* Desain Frame Handphone Yang Diperbesar */
-        .phone-mockup { 
-            width: 300px;         /* Diperbesar dari 170px */
-            height: 450px;        /* Diperbesar dari 320px */
-            border: 8px solid #2b303a; 
-            border-radius: 28px; 
-            background-color: #f8f9fa; 
-            overflow: hidden; 
-            position: relative; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15); 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px;        /* Memberi jarak aman di dalam layar */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        /* Speaker Atas Handphone */
-        .phone-mockup::before {
+        body {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+        /* Sisi Kiri (Gambar Patrick) */
+        .left-side {
+            width: 50%;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .phone-container {
+            width: 320px;
+            border: 5px solid #2c3e50;
+            border-radius: 30px;
+            padding: 40px 15px 20px 15px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .phone-container::before {
             content: '';
             position: absolute;
-            top: 12px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: 15px;
             width: 60px;
             height: 6px;
-            background-color: #2b303a;
+            background-color: #2c3e50;
             border-radius: 3px;
-            z-index: 10;
         }
-        /* Gambar Patrick Dibuat Lebih Kecil dan Utuh di Dalam HP */
-        .phone-mockup img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: contain;  /* Mengubah dari 'cover' menjadi 'contain' agar gambar utuh */
-            display: block; 
-            border-radius: 12px;
+        .phone-container img {
+            width: 100%;
+            border-radius: 5px;
         }
-
-        /* Sisi Kanan Form Biru */
-        .right-side { flex: 1; background-color: #1e88e5; display: flex; align-items: center; justify-content: center; padding: 40px; }
-        .login-form-box { width: 100%; max-width: 360px; text-align: center; color: #ffffff; }
-        .login-form-box h2 { font-weight: bold; letter-spacing: 1.5px; margin-bottom: 30px; text-transform: uppercase; }
-        .form-control-capsule { background-color: #ffffff !important; border: none; border-radius: 50px !important; padding: 12px 25px; font-size: 15px; color: #333333; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 18px; }
-        .form-control-capsule::placeholder { color: #aaaaaa; text-align: center; }
-        .btn-submit-capsule { background-color: #4caf50; color: white; border: none; border-radius: 50px; padding: 12px; width: 100%; font-weight: bold; font-size: 15px; text-transform: uppercase; box-shadow: 0 4px 12px rgba(76,175,80,0.3); margin-top: 10px; }
-        .register-link { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px; display: inline-block; margin-top: 20px; }
-        @media (max-width: 768px) { .left-side { display: none; } }
+        /* Sisi Kanan (Form Biru) */
+        .right-side {
+            width: 50%;
+            background-color: #1e88e5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+            padding: 40px;
+        }
+        .right-side h1 {
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+        form {
+            width: 100%;
+            max-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+        .input-group {
+            width: 100%;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            text-align: center;
+            color: #333;
+            outline: none;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            background-color: #4caf50;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover {
+            background-color: #43a047;
+        }
+        .links-container {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        .links-container a {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+        .error-msg {
+            background-color: #ffffe0;
+            color: #cc0000;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            max-width: 340px;
+            text-align: center;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-<div class="login-wrapper">
-    
-    <!-- SISI KIRI: GAMBAR PATRICK DI DALAM HANDPHONE -->
+    <!-- KOLOM KIRI -->
     <div class="left-side">
-        <div class="phone-mockup">
-            <img src="patrick.jpg." alt="Login">
+        <div class="phone-container">
+            <!-- Pastikan nama file gambar patrick sesuai di folder Anda -->
+            <img src="patrick.jpg" alt="Login Image"> 
         </div>
     </div>
 
-    <!-- SISI KANAN -->
+    <!-- KOLOM KANAN -->
     <div class="right-side">
-        <div class="login-form-box">
-            <h2>Welcome</h2>
+        <h1>WELCOME</h1>
 
-            <?php if($error): ?>
-                <div class="alert alert-danger py-2 small border-0 mb-3 text-center" style="border-radius: 50px; background-color: #ffebee; color: #c62828;">
-                    <?php echo $error; ?>
-                </div>
-            <?php endif; ?>
+        <!-- Notifikasi Error jika koneksi database/login gagal -->
+        <?php if (!empty($error)): ?>
+            <div class="error-msg"><?php echo $error; ?></div>
+        <?php endif; ?>
 
-            <form method="POST">
-                <div class="form-group">
-                    <input type="text" name="username" class="form-control form-control-capsule" placeholder="Username" required>
-                </div>
-                <div class="form-group">
-                    <input type="password" name="password" class="form-control form-control-capsule" placeholder="••••••••" required>
-                </div>
-                           <!-- TOMBOL SUBMIT DI ATASNYA SEBELUMNYA -->
-            <button type="submit" name="login" class="btn btn-submit-capsule">Submit</button>
+        <form action="" method="POST">
+            <div class="input-group">
+                <input type="text" name="username" placeholder="Username" required value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>">
+            </div>
+            <div class="input-group">
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+            <button type="submit" name="login" class="btn-submit">SUBMIT</button>
         </form>
 
-        <!-- SUSUNAN LINK YANG RAPI DAN TIDAK DOUBLE -->
-        <div class="mt-3">
-            <a href="lupa_password.php" class="register-link" style="margin-top: 5px;">Lupa Password? <strong>Klik disini</strong></a>
-        </div>
-        <div>
-            <a href="register.php" class="register-link" style="margin-top: 5px;">Belum memiliki akses admin? <strong>Daftar disini</strong></a>
-        </div>
-
+        <div class="links-container">
+            <p><a href="lupa_password.php">Lupa Password? Klik disini</a></p>
+            <p style="margin-top: 5px; color: #e0e0e0;">Belum memiliki akses admin? <a href="register.php">Daftar disini</a></p>
         </div>
     </div>
-
-</div>
 
 </body>
 </html>
