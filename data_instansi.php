@@ -122,7 +122,7 @@ if (isset($_GET['search'])) {
 <body>
 
     <!-- Navbar Atas -->
-    <div class="top-navbar">
+    <div class="header-nav">
          Buku Tamu RIS Kendal
     </div>
 
