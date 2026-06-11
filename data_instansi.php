@@ -129,16 +129,22 @@ if (isset($_GET['search'])) {
     <!-- Layout Utama -->
     <div class="dashboard-layout">
         
-        <!-- Sidebar Menu Samping -->
-        <div class="sidebar-menu">
-            <div class="menu-top-group">
-                <a href="tampilkan.php">Dashboard</a>
-                <a href="tabel_tamu.php">Tabel Tamu</a>
-                <a class="active" href="data_instansi.php">Data Instansi</a>
-                <a href="manajemen_akun.php">MANAJEMEN AKUN</a>
-            </div>
-            <a href="logout.php" class="logout-link">Logout</a>
-        </div>
+       <!-- Sidebar Menu yang Sudah Dirapikan -->
+<div class="sidebar-menu" style="display: flex; flex-direction: column; min-height: calc(100vh - 52px); justify-content: space-between;">
+    <!-- Grup Menu Utama (Urutan Logis) -->
+    <div>
+        <a href="tampilkan.php">DASHBOARD</a>
+        <a href="tabel_tamu.php">TABEL TAMU</a>
+        <a href="data_instansi.php">DATA INSTANSI</a>
+        <a href="manajemen_akun.php" class="active">MANAJEMEN AKUN</a>
+    </div>
+    
+    <!-- Grup Menu Keluar -->
+    <div style="padding-bottom: 20px;">
+        <a href="logout.php" class="logout-btn" style="color: #e74c3c; font-weight: 600; text-decoration: none; display: block; padding: 15px 20px;">LOGOUT</a>
+    </div>
+</div>
+
 
         <!-- Area Konten Utama Sebelah Kanan -->
         <div class="main-container">
