@@ -136,6 +136,7 @@ if (isset($_GET['search'])) {
                 <a href="tabel_tamu.php">Tabel Tamu</a>
                 <a class="active" href="data_instansi.php">Data Instansi</a>
                 <a href="tambah.php">Tambah Tamu</a>
+                <a href="manajemen_akun.php">MANAJEMEN AKUN</a>
             </div>
             <a href="logout.php" class="logout-link">Logout</a>
         </div>
