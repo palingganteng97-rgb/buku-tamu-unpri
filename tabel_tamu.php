@@ -82,7 +82,7 @@ $query = mysqli_query($koneksi, "SELECT * FROM tamu ORDER BY id DESC");
 
     <!-- Navbar Atas -->
     <div class="top-navbar">
-        Sistem Informasi Buku Tamu Universitas Prima Indonesia
+        Buku Tamu RIS Kendal
     </div>
 
     <!-- Layout Utama Dashboard -->
