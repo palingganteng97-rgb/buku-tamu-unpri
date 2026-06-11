@@ -149,7 +149,9 @@ $cek_switch = mysqli_query($koneksi, "SELECT * FROM users WHERE username='$switc
 
         <!-- Kontainer Utama -->
         <div class="main-container">
-            <div class="white-card">
+            <!-- Ganti menjadi seperti ini -->
+        <div class="white-card" style="background: #fff; padding: 25px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 25px; max-width: 900px;">
+
                 <h2 style="margin-top: 0; margin-bottom: 5px; font-weight: 600; color: #333;">MANAJEMEN AKUN</h2>
                 <p style="color: #777; margin-bottom: 25px; font-size: 14px;">Ubah identitas profil admin atau beralih ke akun login admin lainnya</p>
 
