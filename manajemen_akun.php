@@ -137,7 +137,6 @@ $cek_switch = mysqli_query($koneksi, "SELECT * FROM users WHERE username='$switc
         <a href="tampilkan.php">DASHBOARD</a>
         <a href="tabel_tamu.php">TABEL TAMU</a>
         <a href="data_instansi.php">DATA INSTANSI</a>
-        <a href="tambah.php">TAMBAH TAMU</a>
         <a href="manajemen_akun.php" class="active">MANAJEMEN AKUN</a>
     </div>
     
