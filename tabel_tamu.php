@@ -81,6 +81,7 @@ if (isset($_GET['aksi']) && $_GET['aksi'] == 'ekspor') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buku Tamu RSI Kendal - Data Pengunjung</title>
+    <link rel="stylesheet" href="https://cloudflare.com">
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f6f9; }
@@ -186,11 +187,25 @@ if (isset($_GET['aksi']) && $_GET['aksi'] == 'ekspor') {
                                         <?php echo isset($row['tgl_kunjungan']) ? htmlspecialchars($row['tgl_kunjungan']) : date('Y-m-d H:i:s'); ?>
                                     </td>
                                     <!-- Pastikan kode di dalam kolom aksi tertulis lengkap seperti ini -->
-<td style="text-align: center;">
-    <a href="edit.php?id=<?php echo $row['id']; ?>" class="btn-action btn-edit" style="background-color: #00a8ff; padding: 6px 12px; border-radius: 4px; color: white; text-decoration: none; font-size: 13px; margin-right: 5px;">✏️</a>
-    <a href="hapus.php?id=<?php echo $row['id']; ?>" class="btn-action btn-delete" style="background-color: #e84118; padding: 6px 12px; border-radius: 4px; color: white; text-decoration: none; font-size: 13px;" onclick="return confirm('Apakah Anda yakin ingin menghapus data tamu ini?')">🗑️</a>
-</td>
+<!-- Tambahkan style flexbox pada tag td agar tombol berbaris ke samping -->
+<td style="text-align: center; display: flex; gap: 8px; justify-content: center; align-items: center; border: none;">
+    
+    <!-- Ikon Edit (Hijau Toska) -->
+    <a href="edit.php?id=<?php echo $row['id']; ?>" class="btn-action btn-edit" style="background-color: #009688; color: white; width: 40px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: bold;" title="Edit Data">
+        ✏️
+    </a>
+    
+    <!-- Ikon Cetak Tiket (Jingga) -->
+    <a href="cetak_tiket.php?id=<?php echo $row['id']; ?>" class="btn-action btn-print" style="background-color: #e67e22; color: white; width: 40px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; text-decoration: none; font-size: 18px;" title="Cetak Tiket">
+        🖨️
+    </a>
+    
+    <!-- Ikon Hapus (Merah) -->
+    <a href="hapus.php?id=<?php echo $row['id']; ?>" class="btn-action btn-delete" style="background-color: #e84118; color: white; width: 40px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; text-decoration: none; font-size: 16px;" title="Hapus Data">
+        🗑️
+    </a>
 
+</td>
                                 </tr>
                             <?php 
                                     endwhile; 
