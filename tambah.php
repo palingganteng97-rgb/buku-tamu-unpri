@@ -1,4 +1,8 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 session_start();
 
 // 1. Proteksi Halaman Login
@@ -10,7 +14,7 @@ if (!isset($_SESSION['login'])) {
 // 2. Koneksi ke Database Anda
 $host     = "localhost";
 $username = "root";
-$password = "Slebew234";
+$password = "Slebew234"; // KOSONGKAN JIKA MENGGUNAKAN XAMPP DEFAULT
 $database = "db_buku_tamu";
 
 $koneksi = mysqli_connect($host, $username, $password, $database);
@@ -19,10 +23,14 @@ if (!$koneksi) {
     die("Koneksi gagal: " . mysqli_connect_error());
 }
 
-// Inisialisasi variabel error agar kosong saat halaman pertama kali dibuka
-$error = "";
+// 3. Ambil data instansi dari database untuk pilihan dropdown (AGAR TIDAK LEMOT/LOOPING)
+$sql_instansi = "SELECT * FROM data_instansi ORDER BY nama_instansi ASC";
+$query_opsi_instansi = mysqli_query($koneksi, $sql_instansi);
 
-// 3. Proses ketika tombol submit ditekan
+if (!$query_opsi_instansi) {
+    die("Query Gagal: " . mysqli_error($koneksi));
+}
+
 if (isset($_POST['submit'])) {
     $nama       = mysqli_real_escape_string($koneksi, $_POST['nama']);
     $email      = mysqli_real_escape_string($koneksi, $_POST['email']);
@@ -172,6 +180,6 @@ $query_opsi_instansi = mysqli_query($koneksi, "SELECT * FROM data_instansi ORDER
             }
         }
     </script>
-
 </body>
 </html>
+
