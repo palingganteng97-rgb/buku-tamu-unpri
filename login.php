@@ -146,18 +146,22 @@ if (isset($_GET['google_login'])) {
 
     <script>
         function loginDenganGoogle() {
-            const clientId = "123456789-abcdef.apps.googleusercontent.com";
-            const redirectUri = "http://localhost:8080/bukutamu/login.php";
-            const scope = "email profile";
-            const responseType = "token";
-            
-            const googleAuthUrl =
-            `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}` +
-                `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-                `&response_type=token` +
-                `&scope=${encodeURIComponent(scope)}` +
-                `&prompt=select_account`;
-        }
+    const clientId = "CLIENT_ID_ANDA.apps.googleusercontent.com";
+
+    const redirectUri = "http://localhost:8080/bukutamu/login.php";
+
+    const scope = "email profile";
+
+    const googleAuthUrl =
+        "https://accounts.google.com/o/oauth2/v2/auth" +
+        "?client_id=" + encodeURIComponent(clientId) +
+        "&redirect_uri=" + encodeURIComponent(redirectUri) +
+        "&response_type=token" +
+        "&scope=" + encodeURIComponent(scope) +
+        "&prompt=select_account";
+
+    window.location.href = googleAuthUrl;
+}
 
                 // FUNGSI DETEKSI DAN PENANGKAP AKUN GOOGLE (PERBAIKAN KODE)
         window.onload = function() {
