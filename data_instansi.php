@@ -80,9 +80,21 @@ if (isset($_GET['search'])) {
         /* Konten Utama Sebelah Kanan */
         .main-container { flex-grow: 1; padding: 25px; overflow-x: hidden; background-color: #f4f6f9; }
         .table-card { background: white; border-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); padding: 20px; border: 1px solid #dee2e6; }
-        .table-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .badge-klasifikasi { background-color: #2c5e8a; color: white; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; }
-        
+            .table-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; width: 100%; }
+    .search-container { display: flex; align-items: center; gap: 12px; }
+    .search-input { padding: 9px 14px; border: 1px solid #DCDCE6; border-radius: 6px; font-size: 14px; width: 200px; outline: none; background-color: #ffffff; color: #333333; }
+    .btn-cari { padding: 9px 16px; background-color: #3498DB; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; font-size: 14px; }
+    .btn-cari:hover { background-color: #2980B9; }
+    .btn-create { padding: 9px 18px; background-color: #2ECC71; color: white; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; border: none; cursor: pointer; }
+    .btn-create:hover { background-color: #27AE60; }
+    .badge-klasifikasi { display: inline-block; padding: 6px 14px; font-size: 11px; font-weight: 600; color: white; background-color: #2C5E8A; border-radius: 20px; letter-spacing: 0.5px; text-transform: uppercase; text-align: center; }
+    .action-buttons { display: flex; gap: 8px; justify-content: center; align-items: center; }
+    .btn-action { width: 34px; height: 34px; border-radius: 50%; border: none; display: inline-flex; align-items: center; justify-content: center; color: white; cursor: pointer; text-decoration: none; font-size: 13px; }
+    .btn-edit { background-color: #1ABC9C; }
+    .btn-edit:hover { background-color: #16A085; }
+    .btn-delete { background-color: #E74C3C; }
+    .btn-delete:hover { background-color: #C0392B; }
+
         /* Desain Struktur Garis Tabel Kokoh */
         .table-responsive { width: 100%; overflow-x: auto; margin-top: 15px; }
         .table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: 13px; background-color: #fff; }
@@ -160,23 +172,19 @@ if (isset($_GET['search'])) {
         <div class="main-container">
             <div class="table-card">
                 
-                <div class="table-header-flex">
-                    <div>
-                        <h4 class="m-0" style="color: #333; font-weight: bold; font-size: 18px;">DATA INSTANSI</h4>
-                    </div>
-                    
-                    <div class="d-flex gap-2">
-                        <form action="" method="get" class="d-flex" style="gap: 5px;">
-                            <input type="text" name="search" class="form-control" placeholder="Cari Instansi..." value="<?= htmlspecialchars($search); ?>">
-                            <button type="submit" class="btn btn-secondary" style="padding: 6px 12px;">Cari</button>
-                            <?php if($search != ""): ?>
-                                <a href="data_instansi.php" class="btn btn-light" style="padding: 6px 12px;">Reset</a>
-                            <?php endif; ?>
-                        </form>
-                        <!-- Pemicu Fungsi JavaScript Buka Modal Tambah -->
-                        <button type="button" class="btn btn-primary" onclick="bukaModalTambah()">+ Create New Data</button>
-                    </div>
+                           <div class="table-header-flex">
+                <div class="left-title">
+                    <h2 style="font-size: 22px; font-weight: 600; color: #2C3E50; margin: 0;">DATA INSTANSI</h2>
                 </div>
+                <div class="search-container">
+                    <form method="GET" action="data_instansi.php" style="display: flex; gap: 8px; margin: 0;">
+                        <input type="text" name="cari" class="search-input" placeholder="Cari Instansi...">
+                        <button type="submit" class="btn-cari">Cari</button>
+                    </form>
+                    <a href="tambah_instansi.php" class="btn-create">+ Tambah Instansi Baru</a>
+                </div>
+            </div>
+
 
                 <!-- Struktur Render Tabel -->
                 <div class="table-responsive">
@@ -199,20 +207,16 @@ if (isset($_GET['search'])) {
                                 <td style="text-align: center; font-weight: bold;"><?= $no++; ?></td>
                                 <td><span class="badge-klasifikasi"><?= htmlspecialchars(strtoupper($row['kategori'])); ?></span></td>
                                 <td style="font-weight: 600; color: #333;"><?= htmlspecialchars($row['nama_instansi']); ?></td>
-                                <td style="text-align: center;">
-                                    
-                                    <!-- Tombol Edit Pemicu Modal JavaScript Lokal -->
-                                    <button type="button" class="btn-action-edit me-1" 
-                                            onclick="bukaModalEdit(<?= $row['id']; ?>, '<?= htmlspecialchars($row['kategori'], ENT_QUOTES); ?>', '<?= htmlspecialchars($row['nama_instansi'], ENT_QUOTES); ?>')">
-                                        &#9998;
-                                    </button>
-                                    
-                                    <!-- Tombol Hapus Bawaan Proyek Anda -->
-                                    <a href="hapus_instansi.php?id=<?= $row['id']; ?>" onclick="return confirm('Yakin ingin menghapus data ini?')" class="btn-action-hapus">
-                                        &#128465;
-                                    </a>
+                                <td style="text-align: center; vertical-align: middle;">
+                    <div class="action-buttons">
+                        <!-- Tombol Edit Bulat Toska dengan Fungsi Modal Anda -->
+                        <button type="button" class="btn-action btn-edit" title="Edit" onclick="bukaModalEdit(<?= $row['id']; ?>, '<?= htmlspecialchars($row['nama_instansi'], ENT_QUOTES); ?>')">📝</button>
+                        
+                        <!-- Tombol Hapus Bulat Merah -->
+                        <a href="hapus_instansi.php?id=<?= $row['id']; ?>" class="btn-action btn-delete" title="Hapus" onclick="return confirm('Apakah Anda yakin ingin menghapus data instansi ini?')">🗑️</a>
+                    </div>
+                </td>
 
-                                </td>
                             </tr>
                             <?php 
                                 endwhile; 
